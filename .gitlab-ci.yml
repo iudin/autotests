@@ -1,0 +1,104 @@
+variables:
+  REPORTS_URL: https://some-url.com/
+  PROJECT_DIRECTORY: /autotests
+
+stages:
+  - testing
+  - history
+  - reports
+  - deploy
+
+docker_job:
+  stage: testing
+  tags:
+    - docker
+    - shell
+  image: registry/docker.io/codeceptjs/codeceptjs
+  before_script:
+    - npm ci
+  script:
+    - npm run allure
+  allow_failure: true
+  artifacts:
+    when: always
+    paths:
+      - output
+    expire_in: 3 day
+  rules:
+    - when: always
+
+download_history:
+  stage: history
+  image: registry/services/image-builder
+  tags:
+    - docker
+    - shell
+  script:
+    - mkdir -p ./public/history
+    - 'JOB_ID=$(curl -X GET --header "PRIVATE-TOKEN: $PRIVATE_TOKEN" "https://some-repo.com/api/v4/projects/$CI_PROJECT_ID/jobs?scope=success" | jq -c "[.[]   | select( .name == \"allure_job\") | select( .ref == \"main\")][0] | .id")'
+    - 'curl --output artifacts.zip --header "PRIVATE-TOKEN: $PRIVATE_TOKEN" "https://some-repo.com/api/v4/projects/$CI_PROJECT_ID/jobs/$JOB_ID/artifacts"'
+    - unzip -o artifacts.zip -x "output/*" -x "public/data/*" || echo "empty zip file"
+    - chmod -R o+w ./public
+    - mkdir -p ./output/allure/history
+    - cp -R public/history/. ./output/allure/history
+  artifacts:
+    name: '$CI_PIPELINE_ID-$CI_COMMIT_REF_NAME'
+    paths:
+      - output
+    expire_in: 2 week
+  needs:
+    - job: docker_job
+      artifacts: true
+
+allure_job:
+  stage: reports
+  image: registry/docker.io/frankescobar/allure-docker-service
+  tags:
+    - docker
+    - shell
+  script:
+    - allure generate output/allure -o ./allure
+    - cp -R ./allure/. public
+  artifacts:
+    name: '$CI_PIPELINE_ID-$CI_COMMIT_REF_NAME'
+    paths:
+      - public
+    expire_in: 2 week
+  needs:
+    - job: download_history
+      artifacts: true
+
+pages:
+  tags:
+    - shell
+  stage: deploy
+  needs:
+    - job: allure_job
+      artifacts: true
+  script:
+    - cp -r public /var/www/html/test
+  artifacts:
+    name: '$CI_PIPELINE_ID-$CI_COMMIT_REF_NAME'
+    paths:
+      - public
+  environment:
+    name: pages/${CI_COMMIT_REF_SLUG}
+    url: "${REPORTS_URL}"
+    on_stop: stop_pages
+  only:
+   - main
+
+stop_pages:
+  stage: deploy
+  script:
+    - rm -rf public/${CI_COMMIT_REF_SLUG}/
+  when: manual
+  artifacts:
+    paths:
+      - public
+  environment:
+    auto_stop_in: 7 days
+    name: pages/${CI_COMMIT_REF_SLUG}
+    action: stop
+  only:
+   - main

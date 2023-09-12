@@ -1,0 +1,38 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "HEADLESS=true codeceptjs run",
+    "e2e": "codeceptjs run",
+    "grep": "codeceptjs run --grep ''",
+    "allure": "HEADLESS=true codeceptjs run --plugins allure"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@codeceptjs/allure-legacy": "1.0.2",
+    "@types/chai": "4.3.4",
+    "@types/node": "18.11.18",
+    "@types/randomstring": "1.1.8",
+    "@typescript-eslint/eslint-plugin": "5.52.0",
+    "@typescript-eslint/parser": "5.52.0",
+    "allure-commandline": "2.21.0",
+    "chai": "4.3.7",
+    "codeceptjs": "3.4.1",
+    "eslint": "8.34.0",
+    "eslint-config-prettier": "8.6.0",
+    "eslint-plugin-prettier": "4.2.1",
+    "playwright": "1.30.0",
+    "prettier": "2.8.4",
+    "randomstring": "1.2.3",
+    "ts-node": "10.9.1",
+    "tsconfig-paths": "4.1.2",
+    "typescript": "4.9.4"
+  },
+  "engines": {
+    "node": ">=16.12.1",
+    "npm": ">=8.19.2"
+  }
+}

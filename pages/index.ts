@@ -1,0 +1,14 @@
+export { Signup } from 'pages/Signup';
+export { Signin } from 'pages/Signin';
+export { Project } from 'pages/Project';
+export { Main } from 'pages/Main';
+export { SuccessfulRegistration } from 'pages/SuccessfulRegistration';
+export { Reset } from 'pages/Reset';
+export { Projects } from 'pages/Projects';
+export { Post } from 'pages/Post';
+export { Checkout } from 'pages/Checkout';
+export { Yoomoney } from 'pages/Yoomoney';
+export { ThanksPayment } from 'pages/ThanksPayment';
+export { CreateProject } from 'pages/CreateProject';
+export { ManageProject } from 'pages/ManageProject';
+export { Memberships } from 'pages/Memberships';
